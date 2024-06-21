@@ -1,32 +1,22 @@
 import pandas as pd
 import numpy as np
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.metrics.pairwise import linear_kernel
 from surprise import Dataset, Reader, SVD
 from surprise.model_selection import train_test_split
-import os
 
 app = Flask(__name__)
 
 # Load datasets
-def load_data():
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    books_path = os.path.join(base_dir, 'data', 'Final_data.csv')
-    ratings_path = os.path.join(base_dir, 'data', 'Ratings.csv')
+final_books = pd.read_csv('https://drive.google.com/file/d/1M4c5j9k1LQCagym9qtAWT01zU-Ty5itg/view?usp=drive_link', on_bad_lines='skip', encoding='latin1')
+final_books.fillna('', inplace=True)
+final_books.rename(columns={'ï»¿author': 'author'}, inplace=True)
 
-    final_books = pd.read_csv(books_path, on_bad_lines='skip', encoding='latin1')
-    final_books.fillna('', inplace=True)
-    final_books.rename(columns={'ï»¿author': 'author'}, inplace=True)
-
-    ratings = pd.read_csv(ratings_path, on_bad_lines='skip', encoding='latin1')
-    final_books.columns = final_books.columns.str.strip()
-    ratings.columns = ratings.columns.str.strip()
-    final_books.rename(columns={'ï»¿book_Id': 'book_id'}, inplace=True)
-    
-    return final_books, ratings
-
-final_books, ratings = load_data()
+ratings = pd.read_csv('https://drive.google.com/file/d/12xtMkh9HzFsLA-ZwGHZLzr-xCR1ip15r/view?usp=drive_link', on_bad_lines='skip', encoding='latin1')
+final_books.columns = final_books.columns.str.strip()
+ratings.columns = ratings.columns.str.strip()
+final_books.rename(columns={'ï»¿book_Id': 'book_id'}, inplace=True)
 
 # Content-based filtering setup
 final_books['combined_features'] = final_books['title'] + ' ' + final_books['genre'] + ' ' + final_books['author'].fillna('') + ' ' + final_books['desc']
@@ -47,15 +37,11 @@ def get_recommendations(book_id, top_n=10):
     return final_books.iloc[similar_indices][['book_id', 'isbn13']].to_dict(orient='records')
 
 # Collaborative filtering setup
-def train_collaborative_model():
-    reader = Reader(rating_scale=(1, 5))
-    data = Dataset.load_from_df(ratings[['user_id', 'book_id', 'rating']], reader)
-    trainset, testset = train_test_split(data, test_size=0.2, random_state=42)
-    model = SVD(n_factors=20, biased=True, random_state=42)
-    model.fit(trainset)
-    return model
-
-model = train_collaborative_model()
+reader = Reader(rating_scale=(1, 5))
+data = Dataset.load_from_df(ratings[['user_id', 'book_id', 'rating']], reader)
+trainset, testset = train_test_split(data, test_size=0.2, random_state=42)
+model = SVD(n_factors=20, biased=True, random_state=42)
+model.fit(trainset)
 
 def get_book_recommendations(user_id, model, books_df, top_n=10):
     all_book_ids = books_df['book_id'].unique()
@@ -76,16 +62,6 @@ def collaborative_recommendation():
     user_id = int(request.args.get('user_id'))
     recommendations = get_book_recommendations(user_id, model, final_books)
     return jsonify(recommendations)
-
-@app.route('/update-ratings', methods=['POST'])
-def update_ratings():
-    global ratings, model
-    ratings = pd.read_csv(os.path.join('data', 'Ratings.csv'), on_bad_lines='skip', encoding='latin1')
-    ratings.columns = ratings.columns.str.strip()
-    model = train_collaborative_model()
-    return jsonify({"message": "Ratings data updated and model retrained."})
-
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
