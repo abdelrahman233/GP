@@ -9,11 +9,11 @@ from surprise.model_selection import train_test_split
 app = Flask(__name__)
 
 # Load datasets
-final_books = pd.read_csv('https://drive.google.com/file/d/1M4c5j9k1LQCagym9qtAWT01zU-Ty5itg/view?usp=drive_link', on_bad_lines='skip', encoding='latin1')
+final_books = pd.read_csv('/content/drive/MyDrive/Data set/Final_data.csv', on_bad_lines='skip', encoding='latin1')
 final_books.fillna('', inplace=True)
 final_books.rename(columns={'ï»¿author': 'author'}, inplace=True)
 
-ratings = pd.read_csv('https://drive.google.com/file/d/12xtMkh9HzFsLA-ZwGHZLzr-xCR1ip15r/view?usp=drive_link', on_bad_lines='skip', encoding='latin1')
+ratings = pd.read_csv('/content/drive/MyDrive/Data set/Ratings.csv', on_bad_lines='skip', encoding='latin1')
 final_books.columns = final_books.columns.str.strip()
 ratings.columns = ratings.columns.str.strip()
 final_books.rename(columns={'ï»¿book_Id': 'book_id'}, inplace=True)
