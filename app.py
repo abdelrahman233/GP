@@ -1,5 +1,27 @@
 
 from flask import Flask, request, jsonify
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.metrics.pairwise import linear_kernel
+from sklearn.metrics import precision_score, recall_score, average_precision_score, roc_curve, auc
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import linear_kernel
+from sklearn.metrics import precision_score, recall_score
+import matplotlib.pyplot as plt
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.decomposition import TruncatedSVD
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import precision_score, recall_score, f1_score, mean_squared_error,mean_absolute_error
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from surprise import Dataset, Reader, SVD
+from surprise.model_selection import train_test_split
+from surprise.accuracy import mae, rmse
 
 # Initialize Flask app
 app = Flask(__name__)
